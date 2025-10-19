@@ -7,7 +7,7 @@ on:
 jobs:
   ci-pipeline:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -69,35 +69,35 @@ jobs:
       run: |
         # Create CI-safe .env file with dummy values
         cat > .env << 'EOF'
-# Database Configuration
-DB_HOST=mysql-db
-DB_PORT=3306
-DB_NAME=test_marketplace
-DB_USERNAME=test_user
-DB_PASSWORD=test_password
+        # Database Configuration
+        DB_HOST=mysql-db
+        DB_PORT=3306
+        DB_NAME=test_marketplace
+        DB_USERNAME=test_user
+        DB_PASSWORD=test_password
 
-# SMTP Configuration (Dummy values for CI)
-SMTP_USERNAME=test@example.com
-SMTP_PASSWORD=test_smtp_password
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
+        # SMTP Configuration (Dummy values for CI)
+        SMTP_USERNAME=test@example.com
+        SMTP_PASSWORD=test_smtp_password
+        SMTP_HOST=smtp.example.com
+        SMTP_PORT=587
 
-# Twilio Configuration (Dummy values for CI)
-TWILIO_ACCOUNT_SID=test_account_sid
-TWILIO_AUTH_TOKEN=test_auth_token
-TWILIO_PHONE_NUMBER=+1234567890
+        # Twilio Configuration (Dummy values for CI)
+        TWILIO_ACCOUNT_SID=test_account_sid
+        TWILIO_AUTH_TOKEN=test_auth_token
+        TWILIO_PHONE_NUMBER=+1234567890
 
-# Spring Profiles
-SPRING_PROFILES_ACTIVE=test
+        # Spring Profiles
+        SPRING_PROFILES_ACTIVE=test
 
-# Other Services
-REDIS_HOST=redis
-REDIS_PORT=6379
-JWT_SECRET=ci-test-jwt-secret-12345
+        # Other Services
+        REDIS_HOST=redis
+        REDIS_PORT=6379
+        JWT_SECRET=ci-test-jwt-secret-12345
 
-# Eureka Server
-EUREKA_SERVER_URL=http://service-registry:8761/eureka
-EOF
+        # Eureka Server
+        EUREKA_SERVER_URL=http://service-registry:8761/eureka
+        EOF
         echo "✅ Created CI-safe .env file"
 
     - name: Build and Test Docker Setup
