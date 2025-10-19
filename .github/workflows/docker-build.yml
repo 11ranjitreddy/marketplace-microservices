@@ -3,13 +3,26 @@ name: Build Docker Images
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
 
 jobs:
-  build-images:
+  build-docker-images:
     runs-on: ubuntu-latest
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    - name: Build Images
-      run: docker-compose build
+
+    - name: Set up Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        docker-compose --version
+
+    - name: Build Docker Images
+      run: |
+        docker-compose build
+        echo "✅ Docker images built successfully"
+
+    - name: List Docker Images
+      run: |
+        docker images
