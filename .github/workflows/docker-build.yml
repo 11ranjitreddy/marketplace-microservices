@@ -20,7 +20,7 @@ jobs:
 
     - name: Build Docker Images
       run: |
-        docker-compose build
+        docker compose build  # CHANGED: docker-compose -> docker compose
         echo "✅ Docker images built successfully"
 
     - name: List Docker Images
