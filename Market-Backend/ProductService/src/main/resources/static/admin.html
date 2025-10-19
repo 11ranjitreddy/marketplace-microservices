@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { text-align: center; }
+        form { margin-bottom: 30px; max-width: 600px; }
+        input, select, textarea { width: 100%; padding: 8px; margin: 5px 0 15px 0; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        img { width: 50px; }
+        button { padding: 5px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<h1>Admin Dashboard - Add Products</h1>
+
+<form id="productForm">
+    <label>Product Name:</label>
+    <input type="text" id="name" required>
+
+    <label>Price:</label>
+    <input type="number" id="price" step="0.01" required>
+
+    <label>Original Price:</label>
+    <input type="number" id="originalPrice" step="0.01" required>
+
+    <label>Rating:</label>
+    <input type="number" id="rating" step="0.1" min="0" max="5" required>
+
+    <label>Delivery Time:</label>
+    <input type="text" id="deliveryTime" required>
+
+    <label>Image URL:</label>
+    <input type="text" id="image" required>
+
+    <label>Category:</label>
+    <select id="category" required>
+        <option value="Vegetables">Vegetables</option>
+        <option value="Fruits">Fruits</option>
+        <option value="Dairy">Dairy</option>
+        <option value="Meat">Meat</option>
+        <option value="Seafood">Seafood</option>
+        <option value="Grains">Grains</option>
+        <option value="Bakery">Bakery</option>
+    </select>
+
+    <label>In Stock:</label>
+    <select id="inStock" required>
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+    </select>
+
+    <label>Description:</label>
+    <textarea id="description" rows="3" required></textarea>
+
+    <button type="submit">Add Product</button>
+</form>
+
+<h2>Product List</h2>
+<table id="productTable">
+    <thead>
+    <tr>
+        <th>Action</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Original Price</th>
+        <th>Rating</th>
+        <th>Delivery Time</th>
+        <th>Image</th>
+        <th>Category</th>
+        <th>In Stock</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    const apiUrl = 'http://localhost:8092/api/products';
+    const tableBody = document.querySelector('#productTable tbody');
+    const form = document.getElementById('productForm');
+
+    // Load all products on page load
+    window.onload = () => {
+      fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => data.forEach(product => addProductToTable(product)));
+    };
+
+    // Add new product
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const product = {
+        name: document.getElementById('name').value,
+        price: parseFloat(document.getElementById('price').value),
+        originalPrice: parseFloat(document.getElementById('originalPrice').value),
+        rating: parseFloat(document.getElementById('rating').value),
+        deliveryTime: document.getElementById('deliveryTime').value,
+        image: document.getElementById('image').value,
+        category: document.getElementById('category').value,
+        inStock: document.getElementById('inStock').value === 'true',
+        description: document.getElementById('description').value
+      };
+
+      fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product)
+      })
+      .then(res => res.json())
+      .then(data => {
+        addProductToTable(data);
+        form.reset();
+      });
+    });
+
+    // Add row to table
+    function addProductToTable(product) {
+      const row = tableBody.insertRow();
+      row.setAttribute('data-id', product.id);
+      row.innerHTML = `
+        <td>
+          <button onclick="editProduct(${product.id})">Edit</button>
+          <button onclick="deleteProduct(${product.id})">Delete</button>
+        </td>
+        <td>${product.id}</td>
+        <td class="name">${product.name}</td>
+        <td class="price">${product.price}</td>
+        <td class="originalPrice">${product.originalPrice}</td>
+        <td class="rating">${product.rating}</td>
+        <td class="deliveryTime">${product.deliveryTime}</td>
+        <td class="image"><img src="${product.image}" alt="${product.name}"></td>
+        <td class="category">${product.category}</td>
+        <td class="inStock">${product.inStock ? 'Yes' : 'No'}</td>
+        <td class="description">${product.description}</td>
+      `;
+    }
+
+    // Edit product
+    function editProduct(id) {
+      const row = document.querySelector(`tr[data-id='${id}']`);
+      if (!row) return;
+
+      const cells = row.children;
+      const product = {
+        name: cells[2].innerText,
+        price: parseFloat(cells[3].innerText),
+        originalPrice: parseFloat(cells[4].innerText),
+        rating: parseFloat(cells[5].innerText),
+        deliveryTime: cells[6].innerText,
+        image: cells[7].querySelector('img').src,
+        category: cells[8].innerText,
+        inStock: cells[9].innerText === 'Yes',
+        description: cells[10].innerText
+      };
+
+      // Replace cells with inputs
+      cells[2].innerHTML = `<input type="text" value="${product.name}">`;
+      cells[3].innerHTML = `<input type="number" step="0.01" value="${product.price}">`;
+      cells[4].innerHTML = `<input type="number" step="0.01" value="${product.originalPrice}">`;
+      cells[5].innerHTML = `<input type="number" step="0.1" min="0" max="5" value="${product.rating}">`;
+      cells[6].innerHTML = `<input type="text" value="${product.deliveryTime}">`;
+      cells[7].innerHTML = `<input type="text" value="${product.image}">`;
+      cells[8].innerHTML = `<input type="text" value="${product.category}">`;
+      cells[9].innerHTML = `
+        <select>
+          <option value="true" ${product.inStock ? 'selected' : ''}>Yes</option>
+          <option value="false" ${!product.inStock ? 'selected' : ''}>No</option>
+        </select>`;
+      cells[10].innerHTML = `<textarea>${product.description}</textarea>`;
+
+      // Change Edit button to Save
+      cells[0].innerHTML = `<button onclick="saveProduct(${id})">Save</button> <button onclick="deleteProduct(${id})">Delete</button>`;
+    }
+
+    // Save product after edit
+    function saveProduct(id) {
+      const row = document.querySelector(`tr[data-id='${id}']`);
+      const cells = row.children;
+
+      const updatedProduct = {
+        name: cells[2].querySelector('input').value,
+        price: parseFloat(cells[3].querySelector('input').value),
+        originalPrice: parseFloat(cells[4].querySelector('input').value),
+        rating: parseFloat(cells[5].querySelector('input').value),
+        deliveryTime: cells[6].querySelector('input').value,
+        image: cells[7].querySelector('input').value,
+        category: cells[8].querySelector('input').value,
+        inStock: cells[9].querySelector('select').value === 'true',
+        description: cells[10].querySelector('textarea').value
+      };
+
+      fetch(`${apiUrl}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedProduct)
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Update table
+        cells[2].innerText = data.name;
+        cells[3].innerText = data.price;
+        cells[4].innerText = data.originalPrice;
+        cells[5].innerText = data.rating;
+        cells[6].innerText = data.deliveryTime;
+        cells[7].innerHTML = `<img src="${data.image}" alt="${data.name}">`;
+        cells[8].innerText = data.category;
+        cells[9].innerText = data.inStock ? 'Yes' : 'No';
+        cells[10].innerText = data.description;
+        cells[0].innerHTML = `<button onclick="editProduct(${id})">Edit</button> <button onclick="deleteProduct(${id})">Delete</button>`;
+      });
+    }
+
+    // Delete product
+    function deleteProduct(id) {
+      fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
+        .then(() => {
+          const row = document.querySelector(`tr[data-id='${id}']`);
+          row.remove();
+        });
+    }
+</script>
+</body>
+</html>

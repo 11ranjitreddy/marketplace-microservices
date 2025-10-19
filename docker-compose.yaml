@@ -1,0 +1,130 @@
+services:
+  # MySQL Database
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345
+    ports:
+      - "3306:3306"
+    networks:
+      - market-network
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  service-registry:
+    build:
+      context: ./Market-Backend/service-registry
+      dockerfile: Dockerfile.one
+    ports:
+      - "8761:8761"
+    networks:
+      - market-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/service_registry_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka
+      - SPRING_PROFILES_ACTIVE=dev
+
+  productservice:
+    build:
+      context: ./Market-Backend/ProductService
+      dockerfile: Dockerfile.one
+    ports:
+      - "8092:8092"
+    networks:
+      - market-network
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/product_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - SPRING_PROFILES_ACTIVE=dev
+    restart: unless-stopped
+
+  cartservice:
+    build:
+      context: ./Market-Backend/cartService
+      dockerfile: Dockerfile.one
+    ports:
+      - "8093:8093"
+    networks:
+      - market-network
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/cart_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - SPRING_PROFILES_ACTIVE=dev
+    restart: unless-stopped
+
+  customerservice:
+    build:
+      context: ./Market-Backend/CustomerService
+      dockerfile: Dockerfile.one
+    ports:
+      - "8082:8082"
+    networks:
+      - market-network
+    env_file:
+      - .env  # This loads all variables from .env file
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/customer_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      # Email configuration - Spring Boot will read from environment
+      - SPRING_MAIL_HOST=smtp.gmail.com
+      - SPRING_MAIL_PORT=587
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+      # Twilio configuration - Spring Boot will read from environment
+      - SPRING_PROFILES_ACTIVE=dev
+    restart: unless-stopped
+
+  orderservice:
+    build:
+      context: ./Market-Backend/OrderService
+      dockerfile: Dockerfile.one
+    ports:
+      - "9022:9022"
+    networks:
+      - market-network
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/order_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - SPRING_PROFILES_ACTIVE=dev
+    restart: unless-stopped
+
+  apigateway:
+    build:
+      context: ./Market-Backend/APIGateway
+      dockerfile: Dockerfile.one
+    ports:
+      - "5000:5000"
+    networks:
+      - market-network
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka
+      - SPRING_PROFILES_ACTIVE=dev
+
+  frontend:
+    build:
+      context: ./mygrocery
+      dockerfile: Dockerfile.one
+    ports:
+      - "3000:80"
+    networks:
+      - market-network
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+
+networks:
+  market-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

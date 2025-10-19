@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UPI Payment Demo</title>
+</head>
+<body>
+<h1>UPI Payment Demo</h1>
+
+<label>Payee UPI ID:</label>
+<input type="text" id="upiId" value="test@upi" />
+<br><br>
+
+<label>Amount (₹):</label>
+<input type="number" id="amount" value="1" />
+<br><br>
+
+<button id="gpayBtn">Pay with Google Pay</button>
+<button id="phonepeBtn">Pay with PhonePe</button>
+<button id="paytmBtn">Pay with Paytm</button>
+
+<script>
+function payViaUPI(appScheme) {
+    const upiId = document.getElementById('upiId').value;
+    const amount = document.getElementById('amount').value;
+
+    if (!upiId || !amount) {
+        alert('Enter UPI ID and Amount!');
+        return;
+    }
+
+    const upiLink = `upi://pay?pa=${upiId}&pn=TestMerchant&am=${amount}&cu=INR&tn=DemoPayment`;
+
+    let finalLink;
+    switch(appScheme) {
+        case 'gpay':
+            finalLink = `https://pay.google.com/upi/pay?pa=${upiId}&pn=TestMerchant&am=${amount}&cu=INR&tn=DemoPayment`;
+            break;
+        case 'phonepe':
+            finalLink = `phonepe://pay?pa=${upiId}&pn=TestMerchant&am=${amount}&cu=INR&tn=DemoPayment`;
+            break;
+        case 'paytm':
+            finalLink = `paytmmp://pay?pa=${upiId}&pn=TestMerchant&am=${amount}&cu=INR&tn=DemoPayment`;
+            break;
+        default:
+            finalLink = upiLink;
+    }
+
+    // Redirect to selected app
+    window.location.href = finalLink;
+}
+
+document.getElementById('gpayBtn').addEventListener('click', () => payViaUPI('gpay'));
+document.getElementById('phonepeBtn').addEventListener('click', () => payViaUPI('phonepe'));
+document.getElementById('paytmBtn').addEventListener('click', () => payViaUPI('paytm'));
+</script>
+</body>
+</html>
