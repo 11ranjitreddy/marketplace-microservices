@@ -36,4 +36,6 @@ export function useProducts() {
   return { products, loading, error };
 }
 
-export default { categories, useProducts };
+// Create a named object and export it as default
+const productData = { categories, useProducts };
+export default productData;
