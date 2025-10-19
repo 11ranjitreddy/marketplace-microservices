@@ -31,7 +31,11 @@ jobs:
     - name: Build Backend Services
       run: |
         cd Market-Backend
-        mvn clean package -DskipTests
+        find . -name "pom.xml" -type f | while read pom_file; do
+          service_dir=$(dirname "$pom_file")
+          echo "📦 Building microservice in: $service_dir"
+          cd "$service_dir" && mvn clean package -DskipTests && cd -
+        done
 
     - name: Build Frontend
       run: |
@@ -41,11 +45,11 @@ jobs:
 
     - name: Build and Test Docker Setup
       run: |
-        docker compose build  # CHANGED: docker-compose -> docker compose
-        docker compose up -d  # CHANGED: docker-compose -> docker compose
+        docker compose build
+        docker compose up -d
         sleep 30
         echo "=== Container Status ==="
-        docker compose ps     # CHANGED: docker-compose -> docker compose
+        docker compose ps
         echo "=== Recent Logs ==="
-        docker compose logs --tail=20  # CHANGED: docker-compose -> docker compose
-        docker compose down   # CHANGED: docker-compose -> docker compose
+        docker compose logs --tail=20
+        docker compose down
