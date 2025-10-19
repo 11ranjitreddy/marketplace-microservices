@@ -24,7 +24,7 @@ import SignUpPage from './pages/SingUpPage';
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  const user =JSON.parse(localStorage.getItem('user' || '{}'));
+ // const user =JSON.parse(localStorage.getItem('user' || '{}'));
   return isAuthenticated ? children : <Navigate to="/signin" replace />;
 };
 
